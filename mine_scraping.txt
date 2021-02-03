@@ -1,0 +1,40 @@
+from selenium import webdriver
+import pandas as pd
+#from bs4 import BeautifulSoup
+from itertools import zip_longest
+import time
+
+title = []
+summary = []
+for pageno in range(0,5): 
+    driver=webdriver.Chrome(executable_path ='C:/Users/shash/Downloads/chromedriver_win32/chromedriver.exe')
+    driver.get("https://www.indeed.com/jobs?q=software+engineer&l=Austin%2C+TX&start=" + str(10*pageno))
+    time.sleep(1)
+    
+    summaryItems = driver.find_elements_by_xpath("//a[contains(@class, 'jobtitle turnstileLink')]")
+    job_links = [summaryItem.get_attribute("href") for summaryItem in summaryItems]
+
+    for job_link in job_links:
+        driver.get(job_link)
+        time.sleep(1)
+
+        try:
+            job_title = driver.find_element_by_xpath("//*[@class='icl-u-xs-mb--xs icl-u-xs-mt--none jobsearch-JobInfoHeader-title']").text
+            title.append(job_title)
+        except:
+            job_title='None'
+        try:
+            job_description = driver.find_element_by_xpath("//*[@class='jobsearch-jobDescriptionText']").text
+            summary.append(job_description)
+        except:
+            job_description='None'
+    
+    
+driver.close()
+
+final = []
+for item in zip_longest(title,summary):
+    final.append(item)
+
+df4=pd.DataFrame(final,columns=['Job_title','Summary'])
+df4.to_csv("software Engineer.csv",index=False)
